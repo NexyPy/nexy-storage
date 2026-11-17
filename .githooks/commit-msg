@@ -1,0 +1,8 @@
+#!/bin/sh
+# Reject AI attribution and generated characters before the commit exists.
+set -e
+ROOT=$(git rev-parse --show-toplevel)
+PY=$(command -v python3 || command -v python) || exit 0
+
+"$PY" "$ROOT/scripts/check_attribution.py" --message-file "$1"
+"$PY" "$ROOT/scripts/check_human_characters.py" --message-only --message-file "$1" --root "$ROOT"
