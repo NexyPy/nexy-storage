@@ -9,3 +9,5 @@ build/
 .mypy_cache/
 .coverage
 .env
+.coverage.json
+requirements-audit.txt
