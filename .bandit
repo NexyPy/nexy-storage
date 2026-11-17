@@ -1,0 +1,5 @@
+# Bandit configuration - nexy-storage.
+#
+# Zero findings is the gate. A finding is fixed in code or carries an inline
+# "# nosec <ID>" with a one-line justification and an accepted risk entry.
+skips: []
