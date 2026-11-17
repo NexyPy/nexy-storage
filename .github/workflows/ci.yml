@@ -43,7 +43,7 @@ jobs:
       - name: Run every gate
         env:
           BASE_REF: ${{ github.event.pull_request.base.ref || 'main' }}
-        run: uv run --no-sync python scripts/verify.py --base "origin/${{ BASE_REF }}"
+        run: uv run --no-sync python scripts/verify.py --base "origin/${BASE_REF}"
 
   attribution:
     name: Commit attribution
