@@ -1,0 +1,12 @@
+#!/bin/sh
+# Check the staged files before the commit is created.
+set -e
+ROOT=$(git rev-parse --show-toplevel)
+PY=$(command -v python3 || command -v python) || exit 0
+
+cd "$ROOT"
+"$PY" scripts/check_human_characters.py --staged
+uv run --frozen ruff check src/ tests/ scripts/
+uv run --frozen ruff format src/ tests/ scripts/ --check
+uv run --frozen python -m mypy src/server/nexy_storage --strict
+uv run --frozen python -m pytest tests/ -q
