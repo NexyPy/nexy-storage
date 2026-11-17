@@ -1,0 +1,89 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop, "feature/**", "fix/**", "docs/**", "chore/**"]
+  pull_request:
+    branches: [develop, main]
+
+permissions: {}
+
+concurrency:
+  group: ci-${{ github.event_name }}-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  attribution:
+    name: Commit attribution
+    runs-on: ubuntu-26.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Reject AI attribution in new commits
+        env:
+          BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          if [ -n "$BASE" ] && git cat-file -e "${BASE}^{commit}" 2>/dev/null; then
+            RANGE="${BASE}..HEAD"
+          else
+            RANGE="HEAD~1..HEAD"
+          fi
+          python3 scripts/check_attribution.py --range "$RANGE"
+
+  characters:
+    name: Character check
+    runs-on: ubuntu-26.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Reject characters a person does not type
+        run: python3 scripts/check_human_characters.py
+
+  release:
+    name: Release setup
+    runs-on: ubuntu-26.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Check the release workflow
+        run: python3 scripts/check_release_setup.py --publish-command 'uv publish --trusted-publishing always'
+
+  review:
+    name: Maintainer review
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-26.04
+    timeout-minutes: 5
+    permissions:
+      pull-requests: read
+    steps:
+      - name: Require the maintainer approval
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          AUTHOR: ${{ github.event.pull_request.user.login }}
+          NUMBER: ${{ github.event.pull_request.number }}
+          MAINTAINER: Espoir-Loem
+        run: |
+          if [ "$AUTHOR" = "$MAINTAINER" ]; then
+            echo "Maintainer pull request: no separate validation needed"
+            exit 0
+          fi
+          COUNT=$(gh api "repos/$GH_REPO/pulls/$NUMBER/reviews" --paginate \
+            --jq "[.[] | select(.state == \"APPROVED\" and .user.login == \"$MAINTAINER\")] | length")
+          test "$COUNT" -ge 1
