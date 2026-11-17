@@ -40,7 +40,16 @@ python3 scripts/check_human_characters.py
 python3 scripts/check_release_setup.py --publish-command 'uv publish --trusted-publishing always'
 ```
 
-Add language gates here when the first code lands.
+Run the full gate set from the root before a commit.
+
+```bash
+uv run python scripts/verify.py
+```
+
+This runs Ruff lint and format, mypy strict, the structure audit, the character check, the release
+setup check, pytest with 100 percent branch coverage, diff coverage against `origin/develop` and
+Bandit. The dependency audit runs in CI against the frozen lock. The smoke test in the release
+workflow installs both the wheel and the sdist and imports the package.
 
 ## Releases
 
