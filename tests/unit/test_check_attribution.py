@@ -33,3 +33,13 @@ def test_message_with_dependabot_co_author_is_accepted(tmp_path: Path):
     )
     result = _run(message, tmp_path / "message")
     assert result.returncode == 0
+
+
+def test_message_with_spoofed_dependabot_domain_is_rejected(tmp_path: Path):
+    message = (
+        "chore(deps): bump pnpm/action-setup\n\n"
+        "Co-authored-by: dependabot[bot] "
+        "<1+dependabot[bot]@evilusers.noreply.github.com>\n"
+    )
+    result = _run(message, tmp_path / "message")
+    assert result.returncode == 1
