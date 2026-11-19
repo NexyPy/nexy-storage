@@ -175,6 +175,10 @@ def is_ai_identity(value: str) -> bool:
     domain = email.rpartition("@")[2]
     local = email.partition("@")[0]
 
+    if name.lower().removesuffix("[bot]").strip() == "dependabot" and domain.endswith(
+        "users.noreply.github.com"
+    ):
+        return False
     if "[bot]" in name.lower() or "[bot]" in local:
         return True
     if any(domain == vendor or domain.endswith("." + vendor) for vendor in AI_DOMAINS):
