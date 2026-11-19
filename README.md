@@ -13,6 +13,12 @@ signed URLs and image variants.
 | Images | resized and converted variants (WebP, AVIF), made on upload or on first request |
 | Integration | works with the `Image` component and with Nexy forms and actions |
 
+## Branches and releases
+
+`develop` is the integration branch. Work branches start from `develop` and target `develop`.
+`main` receives reviewed merges and release commits. The release workflow is prepared but dormant
+until this module has a package to publish. See `docs/release-setup.md` for the registry setup.
+
 ## Status
 
 Design phase. Nothing is published yet.
